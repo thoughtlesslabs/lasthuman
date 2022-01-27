@@ -5,16 +5,14 @@ __lua__
 -- chapter 4
 
 function _init()
- _update60= update_menu
-	_draw= draw_menu
+ _update60 = update_menu
+	_draw = draw_menu
 	init_player(30,50,1)
 	init_map()
 	reading=false
 	gameover = false
 	logoy=-30
 	logody=40
-	rotation = 1
-	turnspeed = 5
 	debug=""
 end
 
@@ -33,9 +31,9 @@ function init_player(px,py,sp)
 	p = {}
 	p.x = px
 	p.y = py
-	p.dx = px
-	p.dy = py
 	p.tx = 0
+	p.nx = cos(p.tx)*5 + p.x+4
+	p.ny = sin(p.tx)*5 + p.y+4
 	p.acc = 0
 	p.sprite = sp
 end
@@ -65,9 +63,16 @@ function update_game()
 end
 
 function move_player()
+	p.nx = cos(p.tx)*5 + p.x+4
+	p.ny = sin(p.tx)*5 + p.y+4
+	
 	if btn(0) then p.tx += 0.01 end
 	if btn(1) then p.tx -= 0.01 end
-	if btn(4) then p.acc = 0.5 end	
+	if btn(2) then p.acc += 0.01 end	
+	if btn(3) then p.acc -= 0.01 end	
+	
+	p.acc = mid(0,p.acc,1)
+	
 	
 	if p.tx > 1 then
 		p.tx = 0.01
@@ -78,8 +83,7 @@ function move_player()
 
 	p.x += cos(p.tx)*p.acc
 	p.y += sin(p.tx)*p.acc
-	
-	
+
 	p.x = mid(0,p.x,128)
 	p.y = mid(0,p.y,128)
 end
@@ -98,8 +102,7 @@ function draw_game()
 	draw_map()
 	draw_player()
 	print(debug)
-	line(p.x+4,p.y+4,p.x+10,p.y+4)
-	line(p.x+4,p.y+4,p.x+10+p.dx,p.y+10+p.dy,8)
+	line(p.x+4,p.y+4,p.nx,p.ny,8)
 end
 
 function draw_map()
