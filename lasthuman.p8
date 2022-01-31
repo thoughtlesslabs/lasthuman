@@ -1,5 +1,5 @@
 pico-8 cartridge // http://www.pico-8.com
-version 34
+version 35
 __lua__
 -- the last human
 -- chapter 4
@@ -7,13 +7,16 @@ __lua__
 function _init()
  _update60 = update_menu
 	_draw = draw_menu
-	init_player(30,50,1)
+	init_player(10,50,1)
 	init_map()
 	reading=false
 	gameover = false
 	logoy=-30
 	logody=40
 	debug=""
+	angle=0
+	tangle=0
+	pi = 3.14159
 end
 
 function init_map()
@@ -31,10 +34,12 @@ function init_player(px,py,sp)
 	p = {}
 	p.x = px
 	p.y = py
-	p.tx = 0
-	p.nx = cos(p.tx)*5 + p.x+4
-	p.ny = sin(p.tx)*5 + p.y+4
+	p.dx = 0
+	p.dy = 0
+	p.ang = 0
 	p.acc = 0
+	p.rot = 0
+	p.thrust = 0.005
 	p.sprite = sp
 end
 
@@ -63,29 +68,41 @@ function update_game()
 end
 
 function move_player()
-	p.nx = cos(p.tx)*5 + p.x+4
-	p.ny = sin(p.tx)*5 + p.y+4
-	
-	if btn(0) then p.tx += 0.01 end
-	if btn(1) then p.tx -= 0.01 end
-	if btn(2) then p.acc += 0.01 end	
-	if btn(3) then p.acc -= 0.01 end	
-	
-	p.acc = mid(0,p.acc,1)
-	
-	
-	if p.tx > 1 then
-		p.tx = 0.01
+	local turnspeed = 0.01
+
+	if btn(0) then	
+		p.ang += turnspeed
 	end
-	if p.tx < -0.01 then
-		p.tx = 0.99
+	
+	if btn(1) then
+		p.ang -= turnspeed
+	end
+		
+	if p.ang > 0.999 then
+		p.ang = 0
+	end
+	if p.ang < -0.001 then
+		p.ang = 0.999
+	end
+	
+	if btn(4) then
+		p.dx = p.dx + cos(p.ang)*p.thrust
+		p.dy = p.dy + sin(p.ang)*p.thrust
 	end
 
-	p.x += cos(p.tx)*p.acc
-	p.y += sin(p.tx)*p.acc
+	dirx = p.x+4 + cos(p.ang)*10
+	diry = p.y+4 + sin(p.ang)*10
+	
+	p.x = p.x + p.dx
+	p.y = p.y + p.dy
+	
+	p.x = mid(-5,p.x,128)
+	p.y = mid(-5,p.y,128)
 
-	p.x = mid(0,p.x,128)
-	p.y = mid(0,p.y,128)
+end
+
+function thruster()
+	
 end
 -->8
 -- draw functions
@@ -102,7 +119,7 @@ function draw_game()
 	draw_map()
 	draw_player()
 	print(debug)
-	line(p.x+4,p.y+4,p.nx,p.ny,8)
+	line(p.x+4,p.y+4,dirx,diry)
 end
 
 function draw_map()
