@@ -7,16 +7,17 @@ __lua__
 function _init()
  _update60 = update_menu
 	_draw = draw_menu
+	stars={}
 	init_player(10,50,1)
 	init_map()
+	init_stars()
 	reading=false
 	gameover = false
 	logoy=-30
 	logody=40
 	debug=""
-	angle=0
-	tangle=0
-	pi = 3.14159
+	dirx = p.x+4 + cos(p.ang)*10
+	diry = p.y+4 + sin(p.ang)*10
 end
 
 function init_map()
@@ -37,10 +38,27 @@ function init_player(px,py,sp)
 	p.dx = 0
 	p.dy = 0
 	p.ang = 0
-	p.acc = 0
-	p.rot = 0
-	p.thrust = 0.005
+	p.rot = 0.02
+	p.thrust = 0.02
 	p.sprite = sp
+end
+
+function init_stars()
+	local sx,sy,sr
+	for i=0,100 do
+		sx = rnd(i+128)
+		sy = rnd(i+128)
+		sr = flr(rnd(2))
+		add_stars(sx,sy,sr)
+	end
+end
+
+function add_stars(sx,sy,sr)
+	s = {}
+	s.x = sx
+	s.y = sy
+	s.r = sr
+	add(stars,s)
 end
 
 	
@@ -68,42 +86,45 @@ function update_game()
 end
 
 function move_player()
-	local turnspeed = 0.01
+	dirx = cos(p.ang)*10+p.x+4 
+	diry = sin(p.ang)*10+p.y+4
 
+	
+	rotate()
+	thrust()
+
+	p.x = p.x + p.dx
+	p.y = p.y + p.dy
+
+end
+
+function rotate()
 	if btn(0) then	
-		p.ang += turnspeed
+		p.ang += p.rot
 	end
 	
 	if btn(1) then
-		p.ang -= turnspeed
+		p.ang -= p.rot
 	end
 		
-	if p.ang > 0.999 then
+	if p.ang > 0.98 then
 		p.ang = 0
 	end
-	if p.ang < -0.001 then
-		p.ang = 0.999
+	if p.ang < -0.02 then
+		p.ang = 0.98
 	end
-	
+end
+
+function thrust()
 	if btn(4) then
-		p.dx = p.dx + cos(p.ang)*p.thrust
-		p.dy = p.dy + sin(p.ang)*p.thrust
+		p.dx += cos(p.ang)*p.thrust
+		p.dy += sin(p.ang)*p.thrust
 	end
-
-	dirx = p.x+4 + cos(p.ang)*10
-	diry = p.y+4 + sin(p.ang)*10
-	
-	p.x = p.x + p.dx
-	p.y = p.y + p.dy
-	
-	p.x = mid(-5,p.x,128)
-	p.y = mid(-5,p.y,128)
-
+	p.dx = mid(-2,p.dx,2)
+	p.dy = mid(-2,p.dy,2)
 end
 
-function thruster()
-	
-end
+
 -->8
 -- draw functions
 
@@ -116,24 +137,30 @@ end
 
 function draw_game()
 	cls()
+	draw_bg()
 	draw_map()
 	draw_player()
-	print(debug)
+	print(diry,p.x,p.y)
 	line(p.x+4,p.y+4,dirx,diry)
 end
 
 function draw_map()
 
-	mapx = 0
-	mapy = 0
+	mapx = p.x-64
+	mapy = p.y-64
 	
-	camera(mapx*8,mapy*8)
-	
-	map(0,0,0,0,128,64)
+	camera(mapx,mapy)
+	map(0,0,0,0,128,32)
 end
 
 function draw_player()
 	spr(p.sprite,p.x,p.y)
+end
+
+function draw_bg()
+	for i=1,#stars do
+		circfill(stars[i].x,stars[i].y,stars[i].r,7)
+	end
 end
 -->8
 -- game functions
